@@ -11,26 +11,28 @@ export default async function handler(req, res) {
 
   try {
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
+      "https://api.groq.com/openai/v1/chat/completions",
       {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${process.env.GROQ_API_KEY}`,
+        },
         body: JSON.stringify({
-          systemInstruction: {
-            parts: [
-              {
-                text: `You are a translator between English and Dhivehi.
+          model: "llama-3.3-70b-versatile",
+          messages: [
+            {
+              role: "system",
+              content: `You are a translator between English and Dhivehi.
   Translate the user's English text into Dhivehi, written in romanized script (Latin alphabet), following the same romanization conventions used in the Fareesha Abdulla / Michael O'Shea English-Dhivehi dictionary (2005).
   Return only the translated text. No explanations, no notes, no alternatives.`,
-              },
-            ],
-          },
-          contents: [
+            },
             {
               role: "user",
-              parts: [{ text: text.trim() }],
+              content: text.trim(),
             },
           ],
+          temperature: 0.3,
         }),
       }
     );
@@ -39,11 +41,11 @@ export default async function handler(req, res) {
       const err = await response.json();
       return res
         .status(500)
-        .json({ error: err.error?.message || "Gemini API error" });
+        .json({ error: err.error?.message || "Groq API error" });
     }
 
     const data = await response.json();
-    const translation = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+    const translation = data.choices?.[0]?.message?.content || "";
     return res.status(200).json({ translation });
   } catch (err) {
     return res.status(500).json({ error: err.message });
