@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dhivehi Dictionary</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #f7f5f0;
+      --surface: #ffffff;
+      --border: #e2ddd6;
+      --text: #1a1814;
+      --muted: #8a8580;
+      --accent: #c8783a;
+      --accent-light: #f5ece3;
+      --pos-bg: #eef2ec;
+      --pos-text: #4a6741;
+      --radius: 4px;
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    header {
+      padding: 48px 24px 24px;
+      max-width: 720px;
+      margin: 0 auto;
+    }
+
+    header h1 {
+      font-family: 'DM Serif Display', serif;
+      font-size: clamp(28px, 5vw, 42px);
+      font-weight: 400;
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+    }
+
+    header h1 em {
+      font-style: italic;
+      color: var(--accent);
+    }
+
+    header p {
+      margin-top: 8px;
+      font-size: 14px;
+      color: var(--muted);
+      font-weight: 300;
+    }
+
+    /* Tabs */
+    .tabs {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 0 24px;
+      display: flex;
+      gap: 4px;
+      border-bottom: 1.5px solid var(--border);
+    }
+
+    .tab-btn {
+      font-family: 'DM Mono', monospace;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--muted);
+      background: none;
+      border: none;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1.5px;
+      padding: 10px 14px;
+      cursor: pointer;
+      transition: color 0.15s, border-color 0.15s;
+    }
+
+    .tab-btn:hover { color: var(--text); }
+
+    .tab-btn.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+    }
+
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    /* Dictionary tab */
+    .search-wrap {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 20px 24px 12px;
+      position: sticky;
+      top: 0;
+      background: var(--bg);
+      z-index: 10;
+    }
+
+    input[type="search"] {
+      width: 100%;
+      padding: 14px 18px;
+      font-family: 'DM Mono', monospace;
+      font-size: 15px;
+      color: var(--text);
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      outline: none;
+      transition: border-color 0.15s;
+      -webkit-appearance: none;
+    }
+
+    input[type="search"]:focus { border-color: var(--accent); }
+    input[type="search"]::placeholder { color: var(--muted); font-weight: 300; }
+
+    #letter-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      margin-top: 10px;
+    }
+
+    .letter-btn {
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--muted);
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 4px 8px;
+      cursor: pointer;
+      transition: color 0.1s, border-color 0.1s, background 0.1s;
+      line-height: 1;
+    }
+
+    .letter-btn:hover { color: var(--accent); border-color: var(--accent); }
+    .letter-btn.active { color: var(--surface); background: var(--accent); border-color: var(--accent); }
+
+    .meta {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 8px 24px 12px;
+      font-size: 12px;
+      color: var(--muted);
+      font-family: 'DM Mono', monospace;
+    }
+
+    .results {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 0 24px 64px;
+    }
+
+    .entry {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px 20px;
+      margin-bottom: 8px;
+    }
+
+    .entry-head {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .entry-english {
+      font-family: 'DM Serif Display', serif;
+      font-size: 18px;
+      font-weight: 400;
+    }
+
+    .entry-pos {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--pos-text);
+      background: var(--pos-bg);
+      padding: 2px 7px;
+      border-radius: 2px;
+      letter-spacing: 0.04em;
+      flex-shrink: 0;
+    }
+
+    .entry-disambiguation {
+      margin-top: 4px;
+      font-size: 12px;
+      color: var(--muted);
+      font-style: italic;
+    }
+
+    .entry-dhivehi {
+      margin-top: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .dhivehi-value {
+      font-family: 'DM Mono', monospace;
+      font-size: 14px;
+      color: var(--accent);
+      font-weight: 500;
+    }
+
+    .dhivehi-value + .dhivehi-value {
+      padding-top: 4px;
+      border-top: 1px solid var(--border);
+    }
+
+    mark {
+      background: var(--accent-light);
+      color: var(--accent);
+      border-radius: 2px;
+      padding: 0 1px;
+    }
+
+    .empty {
+      text-align: center;
+      padding: 64px 24px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .empty strong {
+      display: block;
+      font-family: 'DM Serif Display', serif;
+      font-size: 22px;
+      font-weight: 400;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+
+    /* Translate tab */
+    .translate-wrap {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 24px 24px 64px;
+    }
+
+    .translate-wrap label {
+      display: block;
+      font-size: 12px;
+      font-family: 'DM Mono', monospace;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 120px;
+      padding: 14px 18px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px;
+      color: var(--text);
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      outline: none;
+      resize: vertical;
+      transition: border-color 0.15s;
+      line-height: 1.6;
+    }
+
+    textarea:focus { border-color: var(--accent); }
+    textarea::placeholder { color: var(--muted); }
+
+    .translate-actions {
+      margin-top: 10px;
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    .btn-translate {
+      font-family: 'DM Mono', monospace;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--surface);
+      background: var(--accent);
+      border: none;
+      border-radius: var(--radius);
+      padding: 10px 20px;
+      cursor: pointer;
+      transition: opacity 0.15s;
+    }
+
+    .btn-translate:hover { opacity: 0.85; }
+    .btn-translate:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .translate-result {
+      margin-top: 20px;
+      display: none;
+    }
+
+    .translate-result.visible { display: block; }
+
+    .translate-result-label {
+      font-size: 12px;
+      font-family: 'DM Mono', monospace;
+      color: var(--muted);
+      margin-bottom: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .btn-copy {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      color: var(--muted);
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 3px 10px;
+      cursor: pointer;
+      transition: color 0.1s, border-color 0.1s;
+    }
+
+    .btn-copy:hover { color: var(--accent); border-color: var(--accent); }
+    .btn-copy.copied { color: var(--pos-text); border-color: var(--pos-text); }
+
+    .translate-output {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px 20px;
+      font-family: 'DM Mono', monospace;
+      font-size: 15px;
+      color: var(--accent);
+      font-weight: 500;
+      line-height: 1.7;
+      white-space: pre-wrap;
+    }
+
+    .translate-error {
+      background: #fdf2f2;
+      border: 1px solid #f0d0d0;
+      border-radius: var(--radius);
+      padding: 14px 18px;
+      font-size: 13px;
+      color: #b94040;
+      font-family: 'DM Mono', monospace;
+    }
+
+    footer {
+      text-align: center;
+      padding: 24px;
+      font-size: 11px;
+      color: var(--muted);
+      font-family: 'DM Mono', monospace;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Dhivehi <em>Dictionary</em></h1>
+    <p>English – Dhivehi &nbsp;·&nbsp; Dictionary &amp; Translation</p>
+  </header>
+
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="dictionary">Dictionary</button>
+    <button class="tab-btn" data-tab="translate">Translate</button>
+  </div>
+
+  <!-- Dictionary tab -->
+  <div class="tab-panel active" id="tab-dictionary">
+    <div class="search-wrap">
+      <input type="search" id="q" placeholder="search english or dhivehi…" autocomplete="off" spellcheck="false" />
+      <div id="letter-bar"></div>
+    </div>
+    <div class="meta" id="meta"></div>
+    <div class="results" id="results">
+      <div class="empty"><strong>Loading…</strong></div>
+    </div>
+  </div>
+
+  <!-- Translate tab -->
+  <div class="tab-panel" id="tab-translate">
+    <div class="translate-wrap">
+      <label for="translate-input">english sentence</label>
+      <textarea id="translate-input" placeholder="Type an English sentence…" spellcheck="false"></textarea>
+      <div class="translate-actions">
+        <button class="btn-translate" id="btn-translate">Translate →</button>
+      </div>
+      <div class="translate-result" id="translate-result">
+        <div class="translate-result-label">
+          <span>dhivehi</span>
+          <button class="btn-copy" id="btn-copy">copy</button>
+        </div>
+        <div id="translate-output"></div>
+      </div>
+    </div>
+  </div>
+
+  <footer>English–Dhivehi Dictionary &nbsp;·&nbsp; F. Abdulla &amp; M. O'Shea, 2005</footer>
+
+  <script>
+    // ── Tabs ──────────────────────────────────────────────
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+      });
+    });
+
+    // ── Dictionary ────────────────────────────────────────
+    const PAGE = 50;
+    const LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+
+    let data = [];
+    let filtered = [];
+    let offset = 0;
+    let query = '';
+    let activeLetter = '';
+    let renderTimer = null;
+    let observer = null;
+
+    const input = document.getElementById('q');
+    const results = document.getElementById('results');
+    const meta = document.getElementById('meta');
+
+    // Build letter bar
+    const letterBar = document.getElementById('letter-bar');
+    letterBar.innerHTML = LETTERS.map(l =>
+      `<button class="letter-btn" data-letter="${l}">${l}</button>`
+    ).join('');
+
+    letterBar.addEventListener('click', e => {
+      const btn = e.target.closest('.letter-btn');
+      if (!btn) return;
+      const letter = btn.dataset.letter;
+      if (activeLetter === letter) {
+        activeLetter = '';
+        btn.classList.remove('active');
+      } else {
+        activeLetter = letter;
+        document.querySelectorAll('.letter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+      }
+      input.value = '';
+      query = '';
+      applyFilter();
+    });
+
+    input.addEventListener('input', () => {
+      activeLetter = '';
+      document.querySelectorAll('.letter-btn').forEach(b => b.classList.remove('active'));
+      clearTimeout(renderTimer);
+      renderTimer = setTimeout(() => {
+        query = input.value.trim().toLowerCase();
+        applyFilter();
+      }, 120);
+    });
+
+    fetch('./en_to_dv.json')
+      .then(r => {
+        if (!r.ok) throw new Error('Failed to load dictionary');
+        return r.json();
+      })
+      .then(json => {
+        data = json;
+        applyFilter();
+      })
+      .catch(err => {
+        results.innerHTML = `<div class="empty"><strong>Error</strong>${err.message}</div>`;
+      });
+
+    function applyFilter() {
+      if (activeLetter) {
+        filtered = data.filter(e => e.english.toLowerCase().startsWith(activeLetter.toLowerCase()));
+      } else if (query) {
+        filtered = data.filter(entry => {
+          if (entry.english.toLowerCase().includes(query)) return true;
+          if (entry.dhivehi && entry.dhivehi.some(d => d.toLowerCase().includes(query))) return true;
+          return false;
+        });
+      } else {
+        filtered = data;
+      }
+
+      offset = 0;
+      results.innerHTML = '';
+      disconnectObserver();
+
+      if (filtered.length === 0) {
+        const q = activeLetter || query;
+        results.innerHTML = `<div class="empty"><strong>No results</strong>Nothing found for "${escHtml(q)}"</div>`;
+        meta.textContent = `0 of ${data.length.toLocaleString()} entries`;
+        return;
+      }
+
+      meta.textContent = (activeLetter || query)
+        ? `${filtered.length.toLocaleString()} of ${data.length.toLocaleString()} entries`
+        : `${data.length.toLocaleString()} entries`;
+
+      appendPage();
+    }
+
+    function appendPage() {
+      const slice = filtered.slice(offset, offset + PAGE);
+      if (slice.length === 0) return;
+
+      const frag = document.createDocumentFragment();
+
+      slice.forEach(entry => {
+        const el = document.createElement('div');
+        el.className = 'entry';
+        const posHtml = entry.pos ? `<span class="entry-pos">${escHtml(entry.pos)}</span>` : '';
+        const disambHtml = entry.disambiguation
+          ? `<div class="entry-disambiguation">${highlight(entry.disambiguation, query)}</div>`
+          : '';
+        const dhivehiHtml = (entry.dhivehi || [])
+          .map(d => `<div class="dhivehi-value">${highlight(d, query)}</div>`)
+          .join('');
+        el.innerHTML = `
+          <div class="entry-head">
+            <span class="entry-english">${highlight(entry.english, query)}</span>
+            ${posHtml}
+          </div>
+          ${disambHtml}
+          <div class="entry-dhivehi">${dhivehiHtml}</div>`;
+        frag.appendChild(el);
+      });
+
+      offset += slice.length;
+
+      if (offset < filtered.length) {
+        const sentinel = document.createElement('div');
+        sentinel.id = 'sentinel';
+        frag.appendChild(sentinel);
+      }
+
+      results.appendChild(frag);
+
+      if (offset < filtered.length) observeSentinel();
+    }
+
+    function observeSentinel() {
+      disconnectObserver();
+      const sentinel = document.getElementById('sentinel');
+      if (!sentinel) return;
+      observer = new IntersectionObserver(entries => {
+        if (entries[0].isIntersecting) {
+          disconnectObserver();
+          sentinel.remove();
+          appendPage();
+        }
+      }, { rootMargin: '200px' });
+      observer.observe(sentinel);
+    }
+
+    function disconnectObserver() {
+      if (observer) { observer.disconnect(); observer = null; }
+    }
+
+    function highlight(text, q) {
+      if (!q) return escHtml(text);
+      const escaped = escHtml(text);
+      const escapedQ = escHtml(q).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      return escaped.replace(new RegExp(`(${escapedQ})`, 'gi'), '<mark>$1</mark>');
+    }
+
+    function escHtml(str) {
+      return str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    // ── Translate ─────────────────────────────────────────
+    const translateInput = document.getElementById('translate-input');
+    const translateBtn = document.getElementById('btn-translate');
+    const translateResult = document.getElementById('translate-result');
+    const translateOutput = document.getElementById('translate-output');
+    const copyBtn = document.getElementById('btn-copy');
+
+    translateBtn.addEventListener('click', async () => {
+      const text = translateInput.value.trim();
+      if (!text) return;
+
+      translateBtn.disabled = true;
+      translateBtn.textContent = 'Translating…';
+      translateResult.classList.remove('visible');
+      translateOutput.innerHTML = '';
+
+      try {
+        const res = await fetch('/api/translate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text }),
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) throw new Error(data.error || 'Translation failed');
+
+        translateOutput.className = 'translate-output';
+        translateOutput.textContent = data.translation;
+        translateResult.classList.add('visible');
+
+      } catch (err) {
+        translateOutput.className = 'translate-error';
+        translateOutput.textContent = err.message;
+        translateResult.classList.add('visible');
+      } finally {
+        translateBtn.disabled = false;
+        translateBtn.textContent = 'Translate →';
+      }
+    });
+
+    // Allow Ctrl/Cmd+Enter to submit
+    translateInput.addEventListener('keydown', e => {
+      if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+        translateBtn.click();
+      }
+    });
+
+    copyBtn.addEventListener('click', () => {
+      const text = translateOutput.textContent;
+      if (!text) return;
+      navigator.clipboard.writeText(text).then(() => {
+        copyBtn.textContent = 'copied!';
+        copyBtn.classList.add('copied');
+        setTimeout(() => {
+          copyBtn.textContent = 'copy';
+          copyBtn.classList.remove('copied');
+        }, 1500);
+      });
+    });
+  </script>
+</body>
+</html>
